@@ -5,6 +5,14 @@
 package com.LabArchivos;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -137,10 +145,56 @@ public class FrmDeleteVenta extends javax.swing.JFrame {
     }//GEN-LAST:event_txtCodigoActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // TODO add your handling code here:
+        String codigo = txtCodigo.getText();
+        if (!codigo.matches("^[1-9][0-9]*$")) {
+                JOptionPane.showMessageDialog(null, "Debe ingresar un código válido", "Error", JOptionPane.ERROR_MESSAGE);
+         } else{
+            if(UtilityClass.codigoExistente(codigo)){
+                ArrayList<String> registros = new ArrayList<>();
+                try{
+                    FileReader fileReader = new FileReader("Ventas.txt");
+                    BufferedReader ventas = new BufferedReader(fileReader);
+                    String line;
+                    while ((line = ventas.readLine()) != null) {
+                        String[] data = line.split("\t"); 
+                        if (data.length >= 1 && !data[0].equals(codigo)) {
+                            registros.add(line);
+                        }
+                    }
+                    ventas.close();
+                    try{
+                        File archivoOriginal = new File("Ventas.txt");
+                        if (archivoOriginal.exists()) {
+                            archivoOriginal.delete();
+                        }
+                        FileWriter fileWriter = new FileWriter("Ventas.txt");
+                        PrintWriter archivoVentas = new PrintWriter(fileWriter);
+
+                        for (String nuevaLinea : registros) {
+                            archivoVentas.println(nuevaLinea);
+                        }
+                        JOptionPane.showMessageDialog(null, "El registro ha sido eliminado.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                        txtCodigo.setText("Digite el código del auto.");
+                        txtCodigo.setForeground(Color.gray);
+                        archivoVentas.close();
+                    }catch(IOException ex){
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error al eliminar el registro.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    
+                }catch(IOException ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al leer el archivo de empleados.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }else{
+                JOptionPane.showMessageDialog(null, "La cédula no existe en el archivo de empleados", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
+        Menu menu = new Menu();
+        menu.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btnCancelarActionPerformed
 

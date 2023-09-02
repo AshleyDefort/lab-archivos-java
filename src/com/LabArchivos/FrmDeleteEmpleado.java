@@ -5,6 +5,14 @@
 package com.LabArchivos;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -138,10 +146,56 @@ public class FrmDeleteEmpleado extends javax.swing.JFrame {
     }//GEN-LAST:event_txtCedulaActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // TODO add your handling code here:
+        String cedula = txtCedula.getText();
+        if (!cedula.matches("^[1-9][0-9]*$")) {
+                JOptionPane.showMessageDialog(null, "Debe ingresar una cédula válida", "Error", JOptionPane.ERROR_MESSAGE);
+         } else{
+            if(UtilityClass.cedulaExistente(cedula)){
+                ArrayList<String> registros = new ArrayList<>();
+                try{
+                    FileReader fileReader = new FileReader("Empleados.txt");
+                    BufferedReader empleados = new BufferedReader(fileReader);
+                    String line;
+                    while ((line = empleados.readLine()) != null) {
+                        String[] data = line.split("\t"); 
+                        if (data.length >= 1 && !data[0].equals(cedula)) {
+                            registros.add(line);
+                        }
+                    }
+                    empleados.close();
+                    try{
+                        File archivoOriginal = new File("Empleados.txt");
+                        if (archivoOriginal.exists()) {
+                            archivoOriginal.delete();
+                        }
+                        FileWriter fileWriter = new FileWriter("Empleados.txt");
+                        PrintWriter archivoEmpleados = new PrintWriter(fileWriter);
+
+                        for (String nuevaLinea : registros) {
+                            archivoEmpleados.println(nuevaLinea);
+                        }
+                        JOptionPane.showMessageDialog(null, "El registro ha sido eliminado.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                        txtCedula.setText("Digite el número de cédula del empleado a eliminar.");
+                        txtCedula.setForeground(Color.gray);
+                        archivoEmpleados.close();
+                    }catch(IOException ex){
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error al eliminar el registro.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    
+                }catch(IOException ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al leer el archivo de empleados.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }else{
+                JOptionPane.showMessageDialog(null, "La cédula no existe en el archivo de empleados", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
+        Menu menu = new Menu();
+        menu.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btnCancelarActionPerformed
 

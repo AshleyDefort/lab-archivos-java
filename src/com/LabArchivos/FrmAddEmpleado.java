@@ -5,6 +5,12 @@
 package com.LabArchivos;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,6 +24,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
     public FrmAddEmpleado() {
         initComponents();
     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -202,7 +209,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
         txtSalario.setBackground(new java.awt.Color(255, 255, 255));
         txtSalario.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
         txtSalario.setForeground(new java.awt.Color(102, 102, 102));
-        txtSalario.setText("Ingrese el salario fijo del empleado");
+        txtSalario.setText("Ingrese el salario fijo del empleado.");
         txtSalario.setBorder(null);
         txtSalario.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -238,6 +245,11 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
         btnRegistrar.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         btnRegistrar.setBorderPainted(false);
         btnRegistrar.setFocusPainted(false);
+        btnRegistrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegistrarActionPerformed(evt);
+            }
+        });
         Bg.add(btnRegistrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 440, 170, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -275,12 +287,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
     }//GEN-LAST:event_formWindowClosing
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
-       txtNombre.setText("Ingrese nombre y apellidos del empleado.");
-       txtCedula.setText("Digite el número de cédula del empleado.");
-       txtCargo.setText("Ingrese el cargo del empleado.");
-       txtTelefono.setText("Digite el teléfono de contacto del empleado.");
-       txtFecha.setText("Digite la fecha de ingreso DD/MM/AAAA.");
-       txtSalario.setText("Ingrese el salario fijo del empleado.");
+       limpiarCajasDeTexto();
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void txtCedulaMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtCedulaMousePressed
@@ -289,7 +296,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
             txtCedula.setForeground(Color.black);
         }
         if(txtNombre.getText().isEmpty()){
-            txtNombre.setText("Ingrese nombre y apellidos del empleado.");
+            txtNombre.setText("Ingrese nombres y apellidos del empleado.");
             txtNombre.setForeground(Color.gray);
         }
         if(txtCargo.getText().isEmpty()){
@@ -311,7 +318,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
     }//GEN-LAST:event_txtCedulaMousePressed
 
     private void txtNombreMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtNombreMousePressed
-        if(txtNombre.getText().equals("Ingrese nombre y apellidos del empleado.")){
+        if(txtNombre.getText().equals("Ingrese nombres y apellidos del empleado.")){
             txtNombre.setText("");
             txtNombre.setForeground(Color.black);
         }
@@ -347,7 +354,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
             txtCedula.setForeground(Color.gray);
         }
         if(txtNombre.getText().isEmpty()){
-            txtNombre.setText("Ingrese nombre y apellidos del empleado.");
+            txtNombre.setText("Ingrese nombres y apellidos del empleado.");
             txtNombre.setForeground(Color.gray);
         }
         if(txtTelefono.getText().isEmpty()){
@@ -378,7 +385,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
             txtCargo.setForeground(Color.gray);
         }
         if(txtNombre.getText().isEmpty()){
-            txtNombre.setText("Ingrese nombre y apellidos del empleado.");
+            txtNombre.setText("Ingrese nombres y apellidos del empleado.");
             txtNombre.setForeground(Color.gray);
         }
         if(txtFecha.getText().isEmpty()){
@@ -409,7 +416,7 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
             txtTelefono.setForeground(Color.gray);
         }
         if(txtNombre.getText().isEmpty()){
-            txtNombre.setText("Ingrese nombre y apellidos del empleado.");
+            txtNombre.setText("Ingrese nombres y apellidos del empleado.");
             txtNombre.setForeground(Color.gray);
         }
         if(txtSalario.getText().isEmpty()){
@@ -440,11 +447,76 @@ public class FrmAddEmpleado extends javax.swing.JFrame {
             txtFecha.setForeground(Color.gray);
         }
         if(txtNombre.getText().isEmpty()){
-            txtNombre.setText("Ingrese nombre y apellidos del empleado.");
+            txtNombre.setText("Ingrese nombres y apellidos del empleado.");
             txtNombre.setForeground(Color.gray);
         }
     }//GEN-LAST:event_txtSalarioMousePressed
 
+    private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
+        //Obtener los datos del formulario
+        String cedula = txtCedula.getText();
+        String nombre = txtNombre.getText();
+        String cargo = txtCargo.getText();
+        String telefono = txtTelefono.getText();
+        String fecha = txtFecha.getText();
+        String salario = txtSalario.getText();
+        // Validación de campos vacíos
+        if (cedula.isEmpty() || nombre.isEmpty() || cargo.isEmpty() || telefono.isEmpty() || fecha.isEmpty() || salario.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Todos los campos deben ser completados", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            // Validación de cédula y teléfono como números haciendo uso de una expresión regular
+            if (!cedula.matches("^[1-9][0-9]*$") || !telefono.matches("^[1-9][0-9]*$")) {
+                JOptionPane.showMessageDialog(null, "La cédula y el teléfono deben contener solo números", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                //Validar que la cédula no esté registrada en el archivo
+                if(UtilityClass.cedulaExistente(cedula)){
+                     JOptionPane.showMessageDialog(null, "La cédula ya existe en el archivo de empleados", "Error", JOptionPane.ERROR_MESSAGE);
+                }else{
+                    // Validación de formato de fecha (DD/MM/AAAA) haciendp uso de una expresión regular
+                    if (!fecha.matches("\\d{2}/\\d{2}/\\d{4}")) {
+                        JOptionPane.showMessageDialog(null, "La fecha debe tener el formato DD/MM/AAAA", "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        // Validación de salario como número positivo
+                        try {
+                            double salarioValue = Double.parseDouble(salario);
+                            if (salarioValue <= 0) {
+                                JOptionPane.showMessageDialog(null, "El salario debe ser un número positivo", "Error", JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                // Una vez se hayan validado todos los datos, se realiza el registro de los datos
+                                try{
+                                    FileWriter outFile = new FileWriter("Empleados.txt", true); 
+                                    PrintWriter RegisterEmpleado = new PrintWriter(outFile);
+                                    RegisterEmpleado.println(cedula+"\t"+nombre+"\t"+cargo+"\t"+telefono+"\t"+fecha+"\t"+salario+"\t"+salario);
+                                    JOptionPane.showMessageDialog(null, "Registro exitoso", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                    limpiarCajasDeTexto();
+                                    RegisterEmpleado.close();
+                                }catch  (IOException ex){
+                                    JOptionPane.showMessageDialog(null, "No fue posible registrar al empleado", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+
+                            }
+                        } catch (NumberFormatException e) {
+                            JOptionPane.showMessageDialog(null, "El salario debe ser un número válido", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_btnRegistrarActionPerformed
+    private void limpiarCajasDeTexto() {
+        txtNombre.setText("Ingrese nombres y apellidos del empleado.");
+        txtNombre.setForeground(Color.gray);
+        txtCedula.setText("Digite el número de cédula del empleado.");
+        txtCedula.setForeground(Color.gray);
+        txtCargo.setText("Ingrese el cargo del empleado.");
+        txtCargo.setForeground(Color.gray);
+        txtTelefono.setText("Digite el teléfono de contacto del empleado.");
+        txtTelefono.setForeground(Color.gray);
+        txtFecha.setText("Digite la fecha de ingreso DD/MM/AAAA.");
+        txtFecha.setForeground(Color.gray);
+        txtSalario.setText("Ingrese el salario fijo del empleado.");
+        txtSalario.setForeground(Color.gray);
+    }
     /**
      * @param args the command line arguments
      */

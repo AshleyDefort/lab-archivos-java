@@ -4,6 +4,18 @@
  */
 package com.LabArchivos;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author ashle
@@ -16,7 +28,25 @@ public class Menu extends javax.swing.JFrame {
     public Menu() {
         initComponents();
     }
+    public static class Empleado {
+        String Cedula;
+        String Nombre;
+        String Cargo;
+        String Telefono;
+        String FechaIngreso;
+        String Salario;
+        String SalarioComision;
 
+        public Empleado(String cedula, String nombre, String cargo, String telefono, String fechaIngreso, String salario, String salarioComision) {
+            this.Cedula = cedula;
+            this.Nombre = nombre;
+            this.Salario = salario;
+            this.SalarioComision = salarioComision;
+            this.FechaIngreso = fechaIngreso;
+            this.Telefono = telefono;
+            this.Cargo = cargo;
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -265,11 +295,75 @@ public class Menu extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSortBySalaryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSortBySalaryActionPerformed
-        // TODO add your handling code here:
+        try {
+            File EmpleadosFile = new File("Empleados.txt");
+            BufferedReader Empleados = new BufferedReader(new FileReader(EmpleadosFile));
+            List<Empleado> registros = new ArrayList<>();
+            String linea;
+            while ((linea = Empleados.readLine()) != null) {
+                String registro[] = linea.split("\t");
+                Empleado empleado = new Empleado(registro[0], registro[1], registro[2], registro[3], registro[4], registro[5], registro[6]);
+                registros.add(empleado);
+            }
+            Empleados.close();
+
+            Collections.sort(registros, new Comparator<Empleado>() {
+             @Override
+                public int compare(Empleado e1, Empleado e2) {
+                    double salario1 = Double.parseDouble(e1.Salario);
+                    double salario2 = Double.parseDouble(e2.Salario);
+                    return Double.compare(salario1, salario2);
+                }
+             });
+
+            FileWriter EmpleadosSortedFile = new FileWriter("Empleados.txt", false);
+            PrintWriter EmpleadosSorted = new PrintWriter(EmpleadosSortedFile);
+
+            for (Empleado empleado : registros) {
+                EmpleadosSorted.println(empleado.Cedula + "\t" + empleado.Nombre + "\t" + empleado.Cargo + "\t" + empleado.Telefono + "\t" + empleado.FechaIngreso + "\t" + empleado.Salario + "\t" + empleado.SalarioComision);
+            }
+
+            EmpleadosSorted.close();
+            JOptionPane.showMessageDialog(null, "El archivo de empleados se ha ordenado con éxito", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+    } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "No se logró ordenar el archivo de empleados", "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+    }
     }//GEN-LAST:event_btnSortBySalaryActionPerformed
 
     private void btnSortByNamesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSortByNamesActionPerformed
-        // TODO add your handling code here:
+        try {
+            File EmpleadosFile = new File("Empleados.txt");
+            BufferedReader Empleados = new BufferedReader(new FileReader(EmpleadosFile));
+            List<Empleado> registros = new ArrayList<>();
+            String linea;
+            while ((linea = Empleados.readLine()) != null) {
+                String registro[] = linea.split("\t");
+                Empleado empleado = new Empleado(registro[0], registro[1], registro[2], registro[3], registro[4], registro[5], registro[6]);
+                registros.add(empleado);
+            }
+            Empleados.close();
+
+            Collections.sort(registros, new Comparator<Empleado>() {
+                @Override
+                public int compare(Empleado e1, Empleado e2) {
+                    return e1.Nombre.compareTo(e2.Nombre);
+                }
+            });
+
+            FileWriter EmpleadosSortedFile = new FileWriter("Empleados.txt", false);
+            PrintWriter EmpleadosSorted = new PrintWriter(EmpleadosSortedFile);
+
+            for (Empleado empleado : registros) {
+                EmpleadosSorted.println(empleado.Cedula + "\t" + empleado.Nombre + "\t" + empleado.Cargo + "\t" + empleado.Telefono + "\t" + empleado.FechaIngreso + "\t" + empleado.Salario + "\t" + empleado.SalarioComision);
+            }
+
+            EmpleadosSorted.close();
+            JOptionPane.showMessageDialog(null, "El archivo de empleados se ha ordenado con éxito", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+    } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "No se logró ordenar el archivo de empleados", "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+    }
     }//GEN-LAST:event_btnSortByNamesActionPerformed
 
     private void btnViewInformeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewInformeActionPerformed

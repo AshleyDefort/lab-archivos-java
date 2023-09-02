@@ -5,6 +5,16 @@
 package com.LabArchivos;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 /**
@@ -44,6 +54,9 @@ public class ViewInforme extends javax.swing.JFrame {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
         });
 
         Bg.setBackground(new java.awt.Color(255, 255, 255));
@@ -78,26 +91,11 @@ public class ViewInforme extends javax.swing.JFrame {
         Bg.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 80, -1, -1));
 
         TblInforme.setBackground(new java.awt.Color(255, 255, 255));
-        TblInforme.setFont(new java.awt.Font("Roboto Black", 0, 14)); // NOI18N
+        TblInforme.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
         TblInforme.setForeground(new java.awt.Color(0, 0, 0));
         TblInforme.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
                 "Tipo de Auto (Marca)", "Cantidad Vendida", "Valor Total"
@@ -137,6 +135,48 @@ public class ViewInforme extends javax.swing.JFrame {
         Menu menu = new Menu();
         menu.setVisible(true);
     }//GEN-LAST:event_formWindowClosing
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        DefaultTableModel model = (DefaultTableModel) TblInforme.getModel();
+         Map<String, MarcaEstadistica> estadisticas = new HashMap<>();
+
+        try {
+            FileReader fileReader = new FileReader("Ventas.txt");
+            BufferedReader ventas = new BufferedReader(fileReader);
+
+            String line;
+            while ((line = ventas.readLine()) != null) {
+                String[] data = line.split("\t");
+                if (data.length >= 4) { 
+                    String marca = data[3];
+                    double ganancia = Double.parseDouble(data[4]);
+
+                    // Verifica si la marca ya está en las estadísticas, si no, la crea
+                    if (!estadisticas.containsKey(marca)) {
+                        estadisticas.put(marca, new MarcaEstadistica(marca));
+                    }
+
+                    // Actualiza las estadísticas de la marca
+                    MarcaEstadistica marcaEstadistica = estadisticas.get(marca);
+                    marcaEstadistica.incrementarCantidadVendida();
+                    marcaEstadistica.incrementarGananciaTotal(ganancia);
+                }
+            }
+
+            ventas.close();
+
+            // Agrega las estadísticas a la tabla
+            NumberFormat formatter = new DecimalFormat("#,##0");
+            for (MarcaEstadistica marcaEstadistica : estadisticas.values()) {
+                double gananciaTotal = marcaEstadistica.getGananciaTotal();
+                String gananciaTotalFormateada = formatter.format(gananciaTotal);
+                model.addRow(new Object[]{marcaEstadistica.getMarca(), marcaEstadistica.getCantidadVendida(), gananciaTotalFormateada});
+            }
+        }catch(IOException ex){
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al leer los datos", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_formWindowOpened
     
     public static void main(String args[]) {
          

@@ -5,6 +5,13 @@
 package com.LabArchivos;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -54,7 +61,6 @@ public class FrmAddVenta extends javax.swing.JFrame {
         btnRegistrar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(781, 517));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -223,6 +229,11 @@ public class FrmAddVenta extends javax.swing.JFrame {
         btnRegistrar.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         btnRegistrar.setBorderPainted(false);
         btnRegistrar.setFocusPainted(false);
+        btnRegistrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegistrarActionPerformed(evt);
+            }
+        });
         Bg.add(btnRegistrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 390, 170, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -364,11 +375,7 @@ public class FrmAddVenta extends javax.swing.JFrame {
     }//GEN-LAST:event_txtMontoActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
-        txtNombre.setText("Ingrese nombre y apellidos del empleado.");
-        txtCedula.setText("Digite el número de cédula del empleado.");
-        txtMarca.setText("Ingrese el nombre de la marca del auto.");
-        txtCodigo.setText("Digite el código del auto.");
-        txtMonto.setText("Ingrese el monto de la venta.");
+        limpiarCajasDeTexto();
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void txtMarcaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMarcaActionPerformed
@@ -384,6 +391,97 @@ public class FrmAddVenta extends javax.swing.JFrame {
         menu.setVisible(true);
     }//GEN-LAST:event_formWindowClosing
 
+    private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
+        //Obtener datos del formulario
+        String nombre = txtNombre.getText();
+        String cedula = txtCedula.getText();
+        String marca = txtMarca.getText();
+        String monto = txtMonto.getText();
+        String codigo = txtCodigo.getText();
+        double montoVenta = Double.parseDouble(monto);
+        ArrayList<String> registrosEmpleados = new ArrayList<>();
+        //Validar que no hayan campos vacíos
+        if(nombre.isEmpty() || cedula.isEmpty() || marca.isEmpty() || monto.isEmpty() || codigo.isEmpty()){
+            JOptionPane.showMessageDialog(null, "Todos los campos deben ser completados", "Error", JOptionPane.ERROR_MESSAGE);
+        }else{
+            //Validar que el campo cédula y monto sean secuencias de número positivos
+            if(!cedula.matches("^[1-9][0-9]*$") || !monto.matches("^[1-9][0-9]*$")){
+                JOptionPane.showMessageDialog(null, "El campo cédula y monto deben ser números", "Error", JOptionPane.ERROR_MESSAGE);
+            }else{
+                //Validar que la cedula digitada esté en el archivo de empleados y que el nombre corresponda a dicha cédula
+                if(!UtilityClass.cedulaExistente(cedula)){
+                    JOptionPane.showMessageDialog(null, "No existe un empleado con el número de documento ingresado", "Error", JOptionPane.ERROR_MESSAGE);
+                }else{
+                    if(!UtilityClass.cedulaNombre(cedula, nombre)){
+                        JOptionPane.showMessageDialog(null, "No existe un empleado con el número de documento y nombre ingresado.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }else{
+                        //Validar que el código ingresado no exista en el archivo ventas
+                        if(UtilityClass.codigoExistente(codigo)){
+                            JOptionPane.showMessageDialog(null, "El código ingresado ya está registrado en el archivo de ventas", "Error", JOptionPane.ERROR_MESSAGE);
+                        }else{
+                            //Ya con todos los datos validados, se realiza el registro en el archivo ventas
+                            try{
+                                FileWriter outFile = new FileWriter("Ventas.txt", true);
+                                PrintWriter register_ventas = new PrintWriter(outFile);
+                                register_ventas.println(codigo+"\t"+nombre+"\t"+cedula+"\t"+marca+"\t"+monto);
+                                limpiarCajasDeTexto();
+                                register_ventas.close();
+                                JOptionPane.showMessageDialog(null, "Registro exitoso", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                if(montoVenta>=30000000){
+                                    try{
+                                    //Una vez se haya registrado la venta, se procede a actualizar el salario más comisión del empleado si la venta mayor a 30000000
+                                    FileReader fileReader = new FileReader("Empleados.txt");
+                                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                                    String linea;
+                                    while ((linea = bufferedReader.readLine()) != null) {
+                                        String[] partes = linea.split("\t"); 
+                                        if (partes.length >= 1 && partes[0].equals(cedula)) {
+                                            // Calcular el salario más comisión y actualiza el campo en  la linea
+                                            Double salario = Double.parseDouble(partes[5]);
+                                            Double salarioComision = salario + (montoVenta*0.02);
+                                            partes[6] = salarioComision.toString();
+                                        }
+                                        registrosEmpleados.add(String.join("\t", partes));
+                                    }
+
+                                    bufferedReader.close();
+
+                                    FileWriter fileWriter = new FileWriter("Empleados.txt", false);
+                                    PrintWriter printWriter = new PrintWriter(fileWriter);
+
+                                    for (String nuevaLinea : registrosEmpleados) {
+                                        printWriter.println(nuevaLinea);
+                                    }
+
+                                    printWriter.close();
+                                }catch(IOException ex){
+                                    ex.printStackTrace();
+                                    JOptionPane.showMessageDialog(null, "No fue posible actualizar el salario del empleado", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                                }
+                            }catch(IOException ex){
+                                ex.printStackTrace();
+                                JOptionPane.showMessageDialog(null, "Error al registrar la venta", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_btnRegistrarActionPerformed
+   private void limpiarCajasDeTexto(){
+        txtNombre.setText("Ingrese nombre y apellidos del empleado.");
+        txtCedula.setText("Digite el número de cédula del empleado.");
+        txtMarca.setText("Ingrese el nombre de la marca del auto.");
+        txtCodigo.setText("Digite el código del auto.");
+        txtMonto.setText("Ingrese el monto de la venta.");
+        txtCedula.setForeground(Color.gray);
+        txtNombre.setForeground(Color.gray);
+        txtMarca.setForeground(Color.gray);
+        txtCodigo.setForeground(Color.gray);
+        txtMonto.setForeground(Color.gray);
+   }
     /**
      * @param args the command line arguments
      */
